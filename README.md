@@ -1,5 +1,7 @@
 # dsh-agent-desktop
 
+English | [简体中文](README.zh.md)
+
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Host plugin that turns
 [`agent-desktop`](https://github.com/vercel-labs/agent-desktop) — Vercel Labs' computer-use CLI —
 into native `desktop_*` tools for the Harness agent.
@@ -58,28 +60,83 @@ The skill and the plugin can coexist; they complement each other.
 
 ## Install
 
-The plugin is a local bundle: no build step, no install scripts, no runtime dependencies.
+The plugin is a local bundle: no build step, no install scripts, no runtime dependencies. There
+are two parts to install — the `agent-desktop` CLI (system-wide) and this bundle (into one Harness
+profile). The registration step is identical on both OSes; only the terminal and the permission
+step differ.
 
-1. Clone this repository anywhere, for example:
+### Register the bundle (both OSes)
+
+The supported route is the Harness Plugin Manager, which links the package into the active profile
+and adds its bundle row:
+
+1. Get the sources — macOS:
    ```bash
-   git clone https://github.com/dogxxgod/dsh-agent-desktop.git
+   git clone https://github.com/dogxxgod/dsh-agent-desktop.git ~/work/dsh-agent-desktop
    ```
-2. Register it in the current Harness profile with the **Plugin Manager** (`plugin_manager`,
-   `install_bundle`, target = the absolute package directory). The manifest declares the bundle
-   patch; the manager links the package and inserts the host row:
-   ```yaml
-   - id: agent-desktop
-     name: dsh-agent-desktop
-     config:
-       binaryPath: agent-desktop
-       stateHome: ''
-       timeoutMs: 60000
-       promptSection: true
+   Windows (PowerShell):
+   ```powershell
+   git clone https://github.com/dogxxgod/dsh-agent-desktop.git "$env:USERPROFILE\work\dsh-agent-desktop"
    ```
-3. Restart the Harness if the manager reports `restart-required`, then ask the agent to run
-   `desktop_status`. The tool list should contain `desktop_*`.
+   Downloading and extracting the ZIP works too; any folder is fine.
+2. In the Harness, open the **Plugins** page and use its install-bundle action (the label varies by
+   version: *Install bundle* / *Install from folder*), then choose that folder. Or simply ask the
+   agent, which calls the same Host capability:
+   > 用 plugin_manager 把 `/absolute/path/to/dsh-agent-desktop` 安装为 bundle
+   The manager writes `dsh-agent-desktop` into the profile's `dsh.profile.bundles` and activates
+   the `agent-desktop` host row.
+3. Restart the Harness if the result says `restart-required`, then run `desktop_status`. The tool
+   list must contain `desktop_*`.
 
-To tune the plugin without editing this package, override its row in your profile's
+### macOS (direct install)
+
+1. **Node.js 22+** — the Harness bundles Node for itself, but a global npm install needs your own:
+   `brew install node`, or the installer from <https://nodejs.org>.
+2. **Install the CLI**:
+   ```bash
+   npm install -g agent-desktop
+   agent-desktop version        # {"version":"2.6","ok":true,...}
+   ```
+   Bun, Yarn and pnpm ship the same package. With nvm/fnm/volta the binary lives in the active
+   Node version's bin directory; `agent-desktop` resolves while that version is active.
+3. **Grant macOS permissions** to the app that launches the CLI — the Harness itself:
+   ```bash
+   agent-desktop permissions --guide
+   ```
+   In **System Settings → Privacy & Security → Accessibility**, add
+   `/Applications/DeepSeek Harness.app` (or `~/Applications/…`) and switch it on. Add the same app
+   under **Screen Recording** if you want screenshots. If macOS lists the built binary separately,
+   add that path too.
+4. **Register the bundle** (section above).
+5. **Verify** after the restart:
+   ```bash
+   agent-desktop status          # accessibility / screen_recording: granted
+   ```
+   and ask the agent to call `desktop_status`; both must report `ok: true`.
+
+### Windows (direct install)
+
+1. **Node.js LTS** — install from <https://nodejs.org> or
+   `winget install OpenJS.NodeJS.LTS`, then open a **new** PowerShell window.
+2. **Install the CLI**:
+   ```powershell
+   npm install -g agent-desktop
+   agent-desktop version        # {"version":"2.6","ok":true,...}
+   ```
+   The npm global prefix (`%APPDATA%\npm`) is on `PATH` by default. If `agent-desktop` is still not
+   found, open a new terminal, or point the plugin's `binaryPath` at the absolute `.exe` path.
+3. **Permissions** — Windows needs no grant for apps at the terminal's integrity level. If you
+   automate elevated windows, start the Harness at that same integrity level.
+4. **Register the bundle** (section above) and restart.
+5. **Verify**:
+   ```powershell
+   agent-desktop status
+   ```
+   and ask the agent to call `desktop_status`.
+
+### Configure (optional)
+
+To tune the plugin without editing this package, override its row in the profile's
 `cordis.patch.yml` (later layers replace the whole `config`):
 
 ```yaml
@@ -91,10 +148,30 @@ To tune the plugin without editing this package, override its row in your profil
     promptSection: true
 ```
 
+### Update
+
+```bash
+cd ~/work/dsh-agent-desktop && git pull
+```
+```powershell
+cd "$env:USERPROFILE\work\dsh-agent-desktop"; git pull
+```
+The bundle is installed as a link, so the new files take effect after a Harness restart; no
+reinstall is needed.
+
 ### Uninstall
 
-Remove the bundle from the Plugin Manager (`remove_bundle`) and restart the Harness. The CLI and
-`~/.agent-desktop` state stay on disk; remove them separately if you no longer need them.
+Remove the bundle in the Harness Plugins page (or via `plugin_manager remove_bundle`) and restart.
+Optionally remove the CLI and its state:
+
+```bash
+npm uninstall -g agent-desktop
+rm -rf ~/.agent-desktop ~/work/dsh-agent-desktop
+```
+```powershell
+npm uninstall -g agent-desktop
+Remove-Item -Recurse -Force "$env:USERPROFILE\.agent-desktop", "$env:USERPROFILE\work\dsh-agent-desktop"
+```
 
 ## Configuration
 
@@ -240,26 +317,6 @@ MIT for this plugin. `agent-desktop` is a separate Apache-2.0 project by Vercel 
 does not embed its code, it only invokes the installed CLI. Not affiliated with Vercel Labs or
 DeepSeek.
 
-## 中文简版
+## 中文说明
 
-`dsh-agent-desktop` 是把 Vercel Labs 的 `agent-desktop`（通过 macOS/Windows/Linux 辅助功能树做
-计算机操作）接入 DeepSeek Harness 的 **Host 插件**：注册 `desktop_snapshot`、`desktop_click`、
-`desktop_type`、`desktop_press`、`desktop_screenshot` 等工具，并注入一份“快照→操作→复核”的
-规则说明。
-
-**为什么不能只装 skill**：DSH 的 Bash 工具带文件沙箱，macOS 沙箱不允许执行 `ps`，而
-`agent-desktop` 的应用清单（`list-apps`、`--app` 过滤、`launch`、`close-app`）依赖 `ps`，在
-Bash 里会报 `ps: Operation not permitted`。插件把 CLI 放到 Harness 主进程执行，绕开该限制；
-skill 仍可保留，二者互补。
-
-**安装**：
-1. `npm install -g agent-desktop`，再 `agent-desktop permissions --guide` 给
-   `DeepSeek Harness.app` 授予辅助功能（截图还需屏幕录制）；
-2. 在 Harness 的插件管理里用 `install_bundle` 指向本仓库绝对路径，重启后运行
-   `desktop_status` 验证。
-
-**配置**：`binaryPath`（默认 `agent-desktop`）、`stateHome`（默认 `~/.agent-desktop`）、
-`timeoutMs`、`promptSection`。
-
-**安全**：默认无头语义操作（不动鼠标、不抢焦点）；`headed: true` 才物理输入，需用户明确同意；
-快照、剪贴板、截图可能含隐私内容，不要外传。
+完整中文文档见 [README.zh.md](README.zh.md)。
