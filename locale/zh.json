@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Agent Desktop 桌面操控",
+    "description": "通过原生辅助功能树操作桌面应用（agent-desktop CLI）：快照、查找、点击、输入、按键、滚动、截图与窗口管理，CLI 在 Harness 主进程侧运行。"
+  }
+}

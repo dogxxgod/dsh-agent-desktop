@@ -1,0 +1,12 @@
+# dsh-agent-desktop bundle patch.
+#
+# Inserts one Host plugin row. Override `config` from your profile's own
+# cordis.patch.yml (later layers win) instead of editing this file.
+- insert:
+    - id: agent-desktop
+      name: dsh-agent-desktop
+      config:
+        binaryPath: agent-desktop
+        stateHome: ''
+        timeoutMs: 60000
+        promptSection: true

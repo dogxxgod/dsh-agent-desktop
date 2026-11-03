@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Agent Desktop",
+    "description": "Drive desktop apps through native accessibility trees with the agent-desktop CLI: snapshot, find, click, type, press, scroll, screenshot and window management, executed Host-side."
+  }
+}
