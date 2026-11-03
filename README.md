@@ -11,7 +11,7 @@ returns a JSON snapshot with a stable `@ref` for every element an agent can act 
 on a ref, and snapshots again to verify. No pixel matching, no coordinates, the loop stays in the
 agent. This plugin gives that loop to DSH as first-class tools.
 
-- Plugin release: `0.1.0`
+- Plugin release: `1.0.0`
 - Compatibility: **DSH `>= 0.2.1-rc.5`**, tested with `0.2.1-rc.5` on macOS 26.7.1 (arm64)
 - CLI compatibility: `agent-desktop` `1.1.0` (JSON envelope `version: 2.6`)
 
@@ -70,19 +70,29 @@ step differ.
 The supported route is the Harness Plugin Manager, which links the package into the active profile
 and adds its bundle row:
 
-1. Get the sources — macOS:
-   ```bash
-   git clone https://github.com/dogxxgod/dsh-agent-desktop.git ~/work/dsh-agent-desktop
-   ```
-   Windows (PowerShell):
-   ```powershell
-   git clone https://github.com/dogxxgod/dsh-agent-desktop.git "$env:USERPROFILE\work\dsh-agent-desktop"
-   ```
-   Downloading and extracting the ZIP works too; any folder is fine.
+1. Download and extract the release archive:
+   - macOS:
+     ```bash
+     curl -L -o dsh-agent-desktop-1.0.0.zip \
+       https://codeload.github.com/dogxxgod/dsh-agent-desktop/zip/refs/tags/v1.0.0
+     unzip -q dsh-agent-desktop-1.0.0.zip -d ~/work
+     ```
+     Or open that URL in a browser and double-click the downloaded ZIP.
+   - Windows (PowerShell):
+     ```powershell
+     Invoke-WebRequest -Uri "https://codeload.github.com/dogxxgod/dsh-agent-desktop/zip/refs/tags/v1.0.0" `
+       -OutFile "$env:USERPROFILE\Downloads\dsh-agent-desktop-1.0.0.zip"
+     Expand-Archive "$env:USERPROFILE\Downloads\dsh-agent-desktop-1.0.0.zip" `
+       -DestinationPath "$env:USERPROFILE\work"
+     ```
+     Or follow the URL in a browser and extract the ZIP with Explorer.
+
+   Either way you get a folder such as `~/work/dsh-agent-desktop-1.0.0` containing `package.json`.
 2. In the Harness, open the **Plugins** page and use its install-bundle action (the label varies by
-   version: *Install bundle* / *Install from folder*), then choose that folder. Or simply ask the
-   agent, which calls the same Host capability:
-   > 用 plugin_manager 把 `/absolute/path/to/dsh-agent-desktop` 安装为 bundle
+   version: *Install bundle* / *Install from folder*), then choose the extracted
+   `dsh-agent-desktop-1.0.0` folder. Or simply ask the agent, which calls the same Host
+   capability:
+   > 用 plugin_manager 把 `/absolute/path/to/dsh-agent-desktop-1.0.0` 安装为 bundle
    The manager writes `dsh-agent-desktop` into the profile's `dsh.profile.bundles` and activates
    the `agent-desktop` host row.
 3. Restart the Harness if the result says `restart-required`, then run `desktop_status`. The tool
@@ -150,14 +160,10 @@ To tune the plugin without editing this package, override its row in the profile
 
 ### Update
 
-```bash
-cd ~/work/dsh-agent-desktop && git pull
-```
-```powershell
-cd "$env:USERPROFILE\work\dsh-agent-desktop"; git pull
-```
-The bundle is installed as a link, so the new files take effect after a Harness restart; no
-reinstall is needed.
+Download the archive of the newer tag (replace `v1.0.0` in the URL, e.g.
+`.../zip/refs/tags/v1.1.0`) and extract it over the same directory, or into a new directory and
+register that folder instead. The bundle is installed as a link, so the new files take effect after
+a Harness restart; no reinstall is needed.
 
 ### Uninstall
 
@@ -166,11 +172,11 @@ Optionally remove the CLI and its state:
 
 ```bash
 npm uninstall -g agent-desktop
-rm -rf ~/.agent-desktop ~/work/dsh-agent-desktop
+rm -rf ~/.agent-desktop ~/work/dsh-agent-desktop-1.0.0
 ```
 ```powershell
 npm uninstall -g agent-desktop
-Remove-Item -Recurse -Force "$env:USERPROFILE\.agent-desktop", "$env:USERPROFILE\work\dsh-agent-desktop"
+Remove-Item -Recurse -Force "$env:USERPROFILE\.agent-desktop", "$env:USERPROFILE\work\dsh-agent-desktop-1.0.0"
 ```
 
 ## Configuration

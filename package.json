@@ -1,6 +1,6 @@
 {
   "name": "dsh-agent-desktop",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "DeepSeek Harness plugin: drive desktop apps through native accessibility trees with the agent-desktop CLI, exposed as Host-side desktop_* tools.",
   "keywords": [
     "dsh-plugin",

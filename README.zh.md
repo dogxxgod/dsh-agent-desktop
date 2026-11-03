@@ -10,7 +10,7 @@
 `agent-desktop` 通过 OS 辅助功能树读取和操作桌面应用：每次快照返回带稳定 `@ref` 的 JSON
 元素树，agent 对 ref 执行动作，再快照复核——不做像素匹配、不用坐标，循环由 agent 掌控。
 
-- 插件版本：`0.1.0`
+- 插件版本：`1.0.0`
 - 兼容性：**DSH `>= 0.2.1-rc.5`**；已在 DSH `0.2.1-rc.5` + macOS 26.7.1 (arm64) 验证
 - CLI 兼容：`agent-desktop` `1.1.0`（JSON envelope `version: 2.6`）
 
@@ -53,24 +53,31 @@ TIMEOUT ... A required macOS app inventory source failed: ps: Operation not perm
 
 推荐通过 Harness 的插件管理器注册。它会把包 link 进当前 profile，并写入 bundle 行：
 
-1. 获取源码。
+1. 下载并解压发布包。
 
    macOS：
    ```bash
-   git clone https://github.com/dogxxgod/dsh-agent-desktop.git ~/work/dsh-agent-desktop
+   curl -L -o dsh-agent-desktop-1.0.0.zip \
+     https://codeload.github.com/dogxxgod/dsh-agent-desktop/zip/refs/tags/v1.0.0
+   unzip -q dsh-agent-desktop-1.0.0.zip -d ~/work
    ```
+   也可以在浏览器打开该 URL，双击下载好的 ZIP 解压。
 
    Windows（PowerShell）：
    ```powershell
-   git clone https://github.com/dogxxgod/dsh-agent-desktop.git "$env:USERPROFILE\work\dsh-agent-desktop"
+   Invoke-WebRequest -Uri "https://codeload.github.com/dogxxgod/dsh-agent-desktop/zip/refs/tags/v1.0.0" `
+     -OutFile "$env:USERPROFILE\Downloads\dsh-agent-desktop-1.0.0.zip"
+   Expand-Archive "$env:USERPROFILE\Downloads\dsh-agent-desktop-1.0.0.zip" `
+     -DestinationPath "$env:USERPROFILE\work"
    ```
+   也可以在浏览器打开该 URL，用资源管理器解压。
 
-   也可以直接下载 ZIP 解压；目录位置任意。
+   解压后得到 `~/work/dsh-agent-desktop-1.0.0` 之类的目录，其中包含 `package.json`。
 
 2. 打开 Harness 的**插件（Plugins）**页面，使用「安装 Bundle / 从本地目录安装」（不同版本
-   按钮文案略有差异），选择该目录。或者直接对 agent 说：
+   按钮文案略有差异），选择解压出的 `dsh-agent-desktop-1.0.0` 目录。或者直接对 agent 说：
 
-   > 用 plugin_manager 把 `/绝对路径/dsh-agent-desktop` 安装为 bundle
+   > 用 plugin_manager 把 `/绝对路径/dsh-agent-desktop-1.0.0` 安装为 bundle
 
    管理器会把 `dsh-agent-desktop` 写入 profile 的 `dsh.profile.bundles`，并激活
    `agent-desktop` 这一行。
@@ -139,14 +146,9 @@ TIMEOUT ... A required macOS app inventory source failed: ps: Operation not perm
 
 ### 升级
 
-```bash
-cd ~/work/dsh-agent-desktop && git pull
-```
-```powershell
-cd "$env:USERPROFILE\work\dsh-agent-desktop"; git pull
-```
-
-bundle 以 link 方式安装，更新文件后**重启 Harness** 即生效，无需重装。
+下载新版本 tag 的 ZIP（把 URL 里的 `v1.0.0` 换成新版本，如 `.../zip/refs/tags/v1.1.0`），解压覆盖
+同一目录；也可以解压到新目录后重新注册该目录。bundle 以 link 方式安装，更新文件后**重启
+Harness** 即生效，无需重装。
 
 ### 卸载
 
@@ -155,11 +157,11 @@ bundle 以 link 方式安装，更新文件后**重启 Harness** 即生效，无
 
 ```bash
 npm uninstall -g agent-desktop
-rm -rf ~/.agent-desktop ~/work/dsh-agent-desktop
+rm -rf ~/.agent-desktop ~/work/dsh-agent-desktop-1.0.0
 ```
 ```powershell
 npm uninstall -g agent-desktop
-Remove-Item -Recurse -Force "$env:USERPROFILE\.agent-desktop", "$env:USERPROFILE\work\dsh-agent-desktop"
+Remove-Item -Recurse -Force "$env:USERPROFILE\.agent-desktop", "$env:USERPROFILE\work\dsh-agent-desktop-1.0.0"
 ```
 
 ## 配置
