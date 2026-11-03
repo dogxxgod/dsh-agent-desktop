@@ -45,11 +45,10 @@ TIMEOUT ... A required macOS app inventory source failed: ps: Operation not perm
 
 ## 安装
 
-插件是本地 bundle：无构建步骤、无安装脚本、无运行时依赖。安装分两部分——系统级的
-`agent-desktop` CLI，以及注册到某个 Harness profile 的本插件。**注册步骤两个系统相同**，
-只是终端命令与权限步骤不同。
+插件是本地 bundle：无构建步骤、无安装脚本、无运行时依赖。`agent-desktop` CLI 与 macOS 权限是
+前置条件（见[系统要求](#系统要求)），下面只做一件事：把本插件注册到某个 Harness profile。
 
-### 注册 bundle（macOS / Windows 通用）
+### 注册 bundle
 
 推荐通过 Harness 的插件管理器注册。它会把包 link 进当前 profile，并写入 bundle 行：
 
@@ -84,51 +83,6 @@ TIMEOUT ... A required macOS app inventory source failed: ps: Operation not perm
 
 3. 如果结果提示 `restart-required`，重启 Harness；然后运行 `desktop_status`，工具列表里应出现
    `desktop_*`。
-
-### macOS（直接安装）
-
-1. **Node.js 22+**：`brew install node`，或从 <https://nodejs.org> 下载安装（Harness 自带的
-   Node 仅供自身使用，`npm -g` 需要系统 Node）。
-2. **安装 CLI**：
-   ```bash
-   npm install -g agent-desktop
-   agent-desktop version        # {"version":"2.6","ok":true,...}
-   ```
-   Bun / Yarn / pnpm 安装的是同一个包。使用 nvm/fnm/volta 时，可执行文件位于当前 Node 版本的
-   bin 目录，切换到该版本后 `agent-desktop` 才在 `PATH` 中。
-3. **授予 macOS 权限**（授予「启动 CLI 的应用」，也就是 Harness 本身）：
-   ```bash
-   agent-desktop permissions --guide
-   ```
-   在**系统设置 → 隐私与安全性 → 辅助功能**中，添加
-   `/Applications/DeepSeek Harness.app`（或 `~/Applications/…`）并打开开关；如需截图，在同一
-   页面把该应用也加入**屏幕录制**。若 macOS 单独列出了 CLI 二进制，也一并添加。
-4. **注册 bundle**（见上一节）。
-5. **验证**（重启后）：
-   ```bash
-   agent-desktop status          # accessibility / screen_recording: granted
-   ```
-   再让 agent 调用 `desktop_status`，两者都应返回 `ok: true`。
-
-### Windows（直接安装）
-
-1. **Node.js LTS**：从 <https://nodejs.org> 安装，或执行
-   `winget install OpenJS.NodeJS.LTS`，然后**新开**一个 PowerShell 窗口。
-2. **安装 CLI**：
-   ```powershell
-   npm install -g agent-desktop
-   agent-desktop version        # {"version":"2.6","ok":true,...}
-   ```
-   npm 全局目录（`%APPDATA%\npm`）默认在 `PATH` 中。若仍找不到 `agent-desktop`，请重开终端，或把
-   插件配置里的 `binaryPath` 指向 `.exe` 的绝对路径。
-3. **权限**：Windows 在同一完整性级别下无需授权；如需自动化提权窗口，请以相同完整性级别启动
-   Harness。
-4. **注册 bundle**（见上一节），然后重启。
-5. **验证**：
-   ```powershell
-   agent-desktop status
-   ```
-   再让 agent 调用 `desktop_status`。
 
 ### 可选配置
 

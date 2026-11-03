@@ -60,12 +60,11 @@ The skill and the plugin can coexist; they complement each other.
 
 ## Install
 
-The plugin is a local bundle: no build step, no install scripts, no runtime dependencies. There
-are two parts to install — the `agent-desktop` CLI (system-wide) and this bundle (into one Harness
-profile). The registration step is identical on both OSes; only the terminal and the permission
-step differ.
+The plugin is a local bundle: no build step, no install scripts, no runtime dependencies. The
+`agent-desktop` CLI and the macOS permission grant are prerequisites (see
+[Requirements](#requirements)); the steps below register the bundle in one Harness profile.
 
-### Register the bundle (both OSes)
+### Register the bundle
 
 The supported route is the Harness Plugin Manager, which links the package into the active profile
 and adds its bundle row:
@@ -97,52 +96,6 @@ and adds its bundle row:
    the `agent-desktop` host row.
 3. Restart the Harness if the result says `restart-required`, then run `desktop_status`. The tool
    list must contain `desktop_*`.
-
-### macOS (direct install)
-
-1. **Node.js 22+** — the Harness bundles Node for itself, but a global npm install needs your own:
-   `brew install node`, or the installer from <https://nodejs.org>.
-2. **Install the CLI**:
-   ```bash
-   npm install -g agent-desktop
-   agent-desktop version        # {"version":"2.6","ok":true,...}
-   ```
-   Bun, Yarn and pnpm ship the same package. With nvm/fnm/volta the binary lives in the active
-   Node version's bin directory; `agent-desktop` resolves while that version is active.
-3. **Grant macOS permissions** to the app that launches the CLI — the Harness itself:
-   ```bash
-   agent-desktop permissions --guide
-   ```
-   In **System Settings → Privacy & Security → Accessibility**, add
-   `/Applications/DeepSeek Harness.app` (or `~/Applications/…`) and switch it on. Add the same app
-   under **Screen Recording** if you want screenshots. If macOS lists the built binary separately,
-   add that path too.
-4. **Register the bundle** (section above).
-5. **Verify** after the restart:
-   ```bash
-   agent-desktop status          # accessibility / screen_recording: granted
-   ```
-   and ask the agent to call `desktop_status`; both must report `ok: true`.
-
-### Windows (direct install)
-
-1. **Node.js LTS** — install from <https://nodejs.org> or
-   `winget install OpenJS.NodeJS.LTS`, then open a **new** PowerShell window.
-2. **Install the CLI**:
-   ```powershell
-   npm install -g agent-desktop
-   agent-desktop version        # {"version":"2.6","ok":true,...}
-   ```
-   The npm global prefix (`%APPDATA%\npm`) is on `PATH` by default. If `agent-desktop` is still not
-   found, open a new terminal, or point the plugin's `binaryPath` at the absolute `.exe` path.
-3. **Permissions** — Windows needs no grant for apps at the terminal's integrity level. If you
-   automate elevated windows, start the Harness at that same integrity level.
-4. **Register the bundle** (section above) and restart.
-5. **Verify**:
-   ```powershell
-   agent-desktop status
-   ```
-   and ask the agent to call `desktop_status`.
 
 ### Configure (optional)
 
